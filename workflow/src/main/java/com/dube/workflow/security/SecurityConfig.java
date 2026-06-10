@@ -1,87 +1,92 @@
-	package com.dube.workflow.security;
-	
-	import org.springframework.context.annotation.Bean;
-	import org.springframework.context.annotation.Configuration;
-	import org.springframework.security.authentication.AuthenticationManager;
-	import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-	import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-	import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-	import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-	import org.springframework.security.config.http.SessionCreationPolicy;
-	import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-	import org.springframework.security.crypto.password.PasswordEncoder;
-	import org.springframework.security.web.SecurityFilterChain;
-	import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-	import org.springframework.web.cors.CorsConfiguration;
-	import org.springframework.web.cors.CorsConfigurationSource;
-	import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-	
-	import java.util.Arrays;
-	import java.util.List;
-	
-	@Configuration
-	@EnableWebSecurity
-	@EnableMethodSecurity // 👈 Make sure this annotation is present!
-	public class SecurityConfig {
-	
-	    private final JwtTokenProvider tokenProvider;
-	
-	    // Inject the token provider bean
-	    public SecurityConfig(JwtTokenProvider tokenProvider) {
-	        this.tokenProvider = tokenProvider;
-	    }
-	
-	    // Instantiate our filter bean
-	    @Bean
-	    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-	        return new JwtAuthenticationFilter(tokenProvider);
-	    }
-	
-	    @Bean
-	    public PasswordEncoder passwordEncoder() {
-	        return new BCryptPasswordEncoder();
-	    }
-	
-	    @Bean
-	    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-	        return config.getAuthenticationManager();
-	    }
-	
-	    @Bean
-	    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-	        http
-	            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-	            .csrf(csrf -> csrf.disable())
-	            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-	            .authorizeHttpRequests(auth -> auth
-	                .requestMatchers("/auth/**").permitAll() // Open to login endpoint
-	                .requestMatchers(
-	                        "/v3/api-docs",
-	                        "/v3/api-docs/**",
-	                        "/swagger-ui/**",
-	                        "/swagger-ui.html"
-	                ).permitAll()
-	                .requestMatchers("/api/users/**").authenticated()
-	                .anyRequest().authenticated()            // Lock down everything else
-	            );
-	
-	        // 🏆 KEY CONFIGURATION: Run our JWT inspector before Spring checks username/password details
-	        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-	        
-	        return http.build();
-	    }
-	
-	    @Bean
-	    public CorsConfigurationSource corsConfigurationSource() {
-	        CorsConfiguration configuration = new CorsConfiguration();
-	        configuration.setAllowedOrigins(List.of("http://localhost:3000")); 
-	        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-	        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Cache-Control"));
-	        configuration.setExposedHeaders(List.of("Authorization"));
-	        configuration.setAllowCredentials(true);
-	        
-	        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-	        source.registerCorsConfiguration("/**", configuration);
-	        return source;
-	    }
-	}
+package com.dube.workflow.security;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
+
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
+public class SecurityConfig {
+
+    private final JwtTokenProvider tokenProvider;
+
+    public SecurityConfig(JwtTokenProvider tokenProvider) {
+        this.tokenProvider = tokenProvider;
+    }
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(tokenProvider);
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/auth/**").permitAll() // Open to login endpoint
+                .requestMatchers(
+                        "/v3/api-docs",
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html"
+                ).permitAll()
+                .requestMatchers("/api/users/**").authenticated()
+                .anyRequest().authenticated()
+            );
+
+        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        
+        return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        
+        // 🏆 FIX: Swapped to setAllowedOriginPatterns to trust both local dev and all Vercel deployments
+        configuration.setAllowedOriginPatterns(List.of(
+            "http://localhost:3000",
+            "https://*.vercel.app"
+        )); 
+        
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        
+        // 🏆 FIX: Changed to "*" to dynamically allow any header configurations your frontend packages pass
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setAllowCredentials(true);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+}
