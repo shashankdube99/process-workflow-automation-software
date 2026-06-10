@@ -1,13 +1,9 @@
-import axios from 'axios';
+// 1. Import your custom API instance instead of raw axios
+import API from './api'; // Check your folder depth (might be '../services/api')
 
-// const API_URL = 'http://localhost:8081/api/customers';
-// 1. Import your centralized instance instead of raw axios
-import API from './api'; 
-
-export const getCustomers = async () => {
-    // 2. Just use the relative endpoint path! 
-    // The instance automatically prepends the Render URL + '/api'
-    const response = await API.get('/customers'); 
+export const getCustomers = async (search = '') => {
+    // 2. Use the relative path. Your instance automatically prepends the Render URL + '/api'
+    const response = await API.get(`/customers?search=${search}`);
     return response.data;
 };
 
