@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://localhost:5432/workflow_db
+    username: postgres 
+    password: 3BK18me028@ 
     driver-class-name: org.postgresql.Driver
   jpa:
     open-in-view: false
@@ -16,8 +16,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    username: shashankdube4638@gmail.com
+    password: impfwbucinrzhlbu
     properties:
       mail:
         smtp:
@@ -26,14 +26,13 @@ spring:
             enable: true
  
 server:
-  port: ${PORT:8081}
+  port: 8081
 
 # Notice that 'app:' is completely flush against the left wall!
 app:
   jwt:
-    secret: ${JWT_SECRET}
+    secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
     expiration-ms: 86400000 
   razorpay:
-    key-id: ${RAZORPAY_KEY_ID}
-    key-secret: ${RAZORPAY_KEY_SECRET}
-    
+    key-id: rzp_test_Sz56fzICmSu1XC
+    key-secret: "NB7GUmRcTq8XGQ5PZbWkd90W"
