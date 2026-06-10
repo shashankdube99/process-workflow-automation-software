@@ -16,10 +16,7 @@ const Login = () => {
 
         try {
             // 🟢 Hit the open Spring Security gateway explicitly on port 8081
-            const response = await axios.post('http://localhost:8081/auth/login', { 
-                email, 
-                password 
-            });
+            API.post('/auth/login', { email, password })
             
             const { accessToken, role } = response.data;
 
