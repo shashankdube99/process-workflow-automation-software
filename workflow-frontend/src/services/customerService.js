@@ -1,6 +1,15 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8081/api/customers';
+// const API_URL = 'http://localhost:8081/api/customers';
+// 1. Import your centralized instance instead of raw axios
+import API from './api'; 
+
+export const getCustomers = async () => {
+    // 2. Just use the relative endpoint path! 
+    // The instance automatically prepends the Render URL + '/api'
+    const response = await API.get('/customers'); 
+    return response.data;
+};
 
 // Utility to get the auth token
 const getAuthHeader = () => {

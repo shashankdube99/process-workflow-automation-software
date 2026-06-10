@@ -1,6 +1,15 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8081/api/notifications';
+// const API_URL = 'http://localhost:8081/api/notifications';
+// 1. Import your centralized instance instead of raw axios
+import API from './api'; 
+
+export const getNotifications = async () => {
+    // 2. Just use the relative endpoint path! 
+    // The instance automatically prepends the Render URL + '/api'
+    const response = await API.get('/notifications'); 
+    return response.data;
+};
 
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
