@@ -2,8 +2,7 @@ import axios from 'axios';
 
 // Create the centralized Axios instance pointing to your Spring Boot server
 const API = axios.create({
-    baseURL: 'http://localhost:8081/api',
-    headers: {
+baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8081/api',    headers: {
         'Content-Type': 'application/json',
     }
 });
