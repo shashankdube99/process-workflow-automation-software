@@ -32,12 +32,17 @@ public class DataSeeder {
                 adminRole = existingRole.get();
             }
 
-            // 2. Create the initial Admin User if the database is empty
+         // 2. Create the initial Admin User if the database is empty
             if (userRepository.count() == 0) {
                 User admin = new User();
-                admin.setEmail("admin@workflow.com");
-                admin.setPassword(passwordEncoder.encode("admin123")); // Hashed for Neon DB
-                admin.setRole(adminRole); // Assigns the UUID-based role relationship
+                admin.setEmail("admin@workflow.com"); // Matches your configuration
+                admin.setPassword(passwordEncoder.encode("admin123"));
+                
+                // 🏆 Add these lines to satisfy the database constraints:
+                admin.setFirstName("Admin");
+                admin.setLastName("User");
+                
+                admin.setRole(adminRole); 
 
                 userRepository.save(admin);
                 System.out.println("=================================================");
