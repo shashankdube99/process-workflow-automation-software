@@ -1,39 +1,23 @@
-import axios from 'axios';
-
-// const API_URL = 'http://localhost:8081/api/notifications';
-// 1. Import your centralized instance instead of raw axios
 import API from './api'; 
-
-export const getNotifications = async () => {
-    // 2. Just use the relative endpoint path! 
-    // The instance automatically prepends the Render URL + '/api'
-    const response = await API.get('/notifications'); 
-    return response.data;
-};
-
-const getAuthHeader = () => {
-  const token = localStorage.getItem('token');
-  return { Authorization: `Bearer ${token}` };
-};
 
 const notificationService = {
   getNotifications: async () => {
-    const response = await axios.get(API_URL, { headers: getAuthHeader() });
+    const response = await API.get('/notifications');
     return response.data;
   },
 
   getUnreadCount: async () => {
-    const response = await axios.get(`${API_URL}/unread-count`, { headers: getAuthHeader() });
+    const response = await API.get('/notifications/unread-count');
     return response.data.count;
   },
 
   markAsRead: async (id) => {
-    const response = await axios.patch(`${API_URL}/${id}/read`, {}, { headers: getAuthHeader() });
+    const response = await API.patch(`/notifications/${id}/read`, {});
     return response.data;
   },
 
   markAllAsRead: async () => {
-    const response = await axios.patch(`${API_URL}/read-all`, {}, { headers: getAuthHeader() });
+    const response = await API.patch('/notifications/read-all', {});
     return response.data;
   }
 };

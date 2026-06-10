@@ -1,54 +1,28 @@
-import axios from 'axios';
-
-// const API_URL = 'http://localhost:8081/api/jobs';
-// 1. Import your centralized instance instead of raw axios
 import API from './api'; 
-
-export const getJobs = async () => {
-    // 2. Just use the relative endpoint path! 
-    // The instance automatically prepends the Render URL + '/api'
-    const response = await API.get('/jobs'); 
-    return response.data;
-};
-
-const getAuthHeader = () => {
-  const token = localStorage.getItem('token');
-  return { Authorization: `Bearer ${token}` };
-};
 
 const jobService = {
   getJobs: async (searchQuery = '') => {
-    const response = await axios.get(`${API_URL}?search=${searchQuery}`, {
-      headers: getAuthHeader(),
-    });
+    const response = await API.get(`/jobs?search=${searchQuery}`);
     return response.data;
   },
 
   getJobById: async (id) => {
-    const response = await axios.get(`${API_URL}/${id}`, {
-      headers: getAuthHeader(),
-    });
+    const response = await API.get(`/jobs/${id}`);
     return response.data;
   },
 
   createJob: async (jobData) => {
-    const response = await axios.post(API_URL, jobData, {
-      headers: getAuthHeader(),
-    });
+    const response = await API.post('/jobs', jobData);
     return response.data;
   },
 
   updateJob: async (id, jobData) => {
-    const response = await axios.put(`${API_URL}/${id}`, jobData, {
-      headers: getAuthHeader(),
-    });
+    const response = await API.put(`/jobs/${id}`, jobData);
     return response.data;
   },
 
   deleteJob: async (id) => {
-    const response = await axios.delete(`${API_URL}/${id}`, {
-      headers: getAuthHeader(),
-    });
+    const response = await API.delete(`/jobs/${id}`);
     return response.data;
   },
 
@@ -57,9 +31,8 @@ const jobService = {
     formData.append('file', file);
     formData.append('fileType', fileType);
 
-    const response = await axios.post(`${API_URL}/${jobId}/files`, formData, {
+    const response = await API.post(`/jobs/${jobId}/files`, formData, {
       headers: {
-        ...getAuthHeader(),
         'Content-Type': 'multipart/form-data',
       },
     });
