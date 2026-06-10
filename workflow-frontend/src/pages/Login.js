@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
-import axios from 'axios'; // 🟢 Import standard axios to bypass the instance's /api prefix
+// 1. We remove raw axios and import your configured API instance instead!
+// Adjust the path '../services/api' if your folders are nested differently.
+import API from '../services/api'; 
 
 const Login = () => {
     const navigate = useNavigate();
@@ -15,8 +17,9 @@ const Login = () => {
         setLoading(true);
 
         try {
-            // 🟢 Hit the open Spring Security gateway explicitly on port 8081
-            API.post('/auth/login', { email, password })
+            // 2. Add 'const response = await' to capture the data!
+            // This will safely use process.env.REACT_APP_API_URL on Vercel
+            const response = await API.post('/auth/login', { email, password });
             
             const { accessToken, role } = response.data;
 
