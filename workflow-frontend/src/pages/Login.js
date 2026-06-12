@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
-import axios from 'axios'; // Standard axios to bypass protected API instance rules
+import axios from 'axios'; 
+import { GoogleLogin } from '@react-oauth/google'; // <-- NEW IMPORT
 
 const Login = () => {
     const navigate = useNavigate();
@@ -17,6 +18,7 @@ const Login = () => {
         return 'http://localhost:8081';
     };
 
+    // Standard Email/Password Login
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -40,6 +42,26 @@ const Login = () => {
         } catch (err) {
             console.error("Login Error Frame:", err);
             setError(err.response?.data?.message || 'Invalid username or password match configuration.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // --- NEW: Google Login Handler ---
+    const handleGoogleSuccess = async (credentialResponse) => {
+        setError('');
+        setLoading(true);
+        try {
+            const response = await axios.post(`${getBackendHost()}/auth/google`, {
+                credential: credentialResponse.credential
+            });
+            const { accessToken, role } = response.data;
+            localStorage.setItem('token', accessToken);
+            localStorage.setItem('userRole', role);
+            navigate('/dashboard');
+        } catch (err) {
+            console.error("Google Auth Error:", err);
+            setError(err.response?.data?.message || 'Google account verification failed.');
         } finally {
             setLoading(false);
         }
@@ -83,6 +105,22 @@ const Login = () => {
                         {loading ? 'Verifying...' : 'Sign In'}
                     </button>
                 </form>
+
+                {/* --- NEW: GOOGLE LOGIN SECTION --- */}
+                <div className="text-center text-muted my-3 small fw-bold">OR</div>
+                <div className="d-flex justify-content-center mb-2">
+                    <GoogleLogin
+                        onSuccess={handleGoogleSuccess}
+                        onError={() => setError('Google Sign-In popup failed to initialize.')}
+                        useOneTap={false}
+                        shape="rectangular"
+                        theme="outline"
+                        text="signin_with"
+                        size="large"
+                    />
+                </div>
+                {/* --------------------------------- */}
+
             </div>
         </div>
     );
